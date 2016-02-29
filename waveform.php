@@ -40,7 +40,6 @@ imagealphablending($image_processed, true);
 imagesavealpha($image_processed, true);
 
 $waveform_data = array();
-
 for ($width = 0; $width < $source_width; $width++) {
 
   for ($height = 0; $height < $source_height; $height++) {
