@@ -13,8 +13,8 @@
  * e: me@preworn.com
  *
  * Created: 2016-02-28, js
- * Version: 2016-02-02, js: creation
- *          2016-02-02, js: development & cleanup
+ * Version: 2016-02-28, js: creation
+ *          2016-02-28, js: development & cleanup
  *
  */
 
