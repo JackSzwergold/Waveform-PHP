@@ -194,7 +194,7 @@ shuffle($image_array);
 
 $image_file = $image_array[0];
 
-if (FALSE) {
+if (TRUE) {
 
   // Testing the color swappping logic.
   $image_processed = imagecreatefrompng($image_file);
