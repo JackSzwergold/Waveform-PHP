@@ -152,10 +152,12 @@ function render_image ($image_file, $waveform_data, $source_width, $source_heigh
 
 //**************************************************************************************//
 // Swap one color for another.
-function swap_colors ($image_file, $image, $source_color, $swap_color) {
+function swap_colors ($image_file, $image, $source_colors, $swap_colors) {
 
   // Swap colors based on the index with a new RGB color.
-  imagecolorset($image, $source_color, $swap_color['red'], $swap_color['green'], $swap_color['blue']);
+  foreach ($swap_colors as $swap_color_key => $swap_color_value) {
+    imagecolorset($image, $source_colors[$swap_color_key], $swap_color_value['red'], $swap_color_value['green'], $swap_color_value['blue']);
+  }
 
   // Set the content headers.
   header("Content-type: image/png" );
@@ -184,11 +186,11 @@ $image_file = 'waveform3.png';
 
 // Testing the color swappping logic.
 $image_processed = imagecreatefrompng($image_file);
-$color_sample = imagecolorat($image_processed, 0, 130);
-$color_sample_index = imagecolorsforindex($image_processed, $color_sample);
-$color_sample_index = imagecolorclosest($image_processed, 239, 239, 239);
-// $color_sample_index = imagecolorclosest($image_processed, 0, 0, 0);
-swap_colors($image_file, $image_processed, $color_sample_index, array('red' => 150, 'green' => 49, 'blue' => 246));
+// $color_sample = imagecolorat($image_processed, 0, 130);
+// $color_sample_index = imagecolorsforindex($image_processed, $color_sample);
+// $color_sample_index = imagecolorclosest($image_processed, 239, 239, 239);
+$color_sample_index = imagecolorclosest($image_processed, 0, 0, 0);
+swap_colors($image_file, $image_processed, array($color_sample_index), array(array('red' => 150, 'green' => 49, 'blue' => 246)));
 
 // Set the width and height.
 $source_width = 1800;
