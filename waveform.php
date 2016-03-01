@@ -152,11 +152,12 @@ function render_image ($image_file, $waveform_data, $source_width, $source_heigh
 
 //**************************************************************************************//
 // Swap one color for another.
-function swap_colors ($image_file, $image, $source_colors, $swap_colors) {
+function swap_colors ($image_file, $image_processed, $color_swap_map) {
 
   // Swap colors based on the index with a new RGB color.
-  foreach ($swap_colors as $swap_color_key => $swap_color_value) {
-    imagecolorset($image, $source_colors[$swap_color_key], $swap_color_value['red'], $swap_color_value['green'], $swap_color_value['blue']);
+  foreach ($color_swap_map as $key => $value) {
+    $source_color = imagecolorclosest($image_processed, $value['source']['red'], $value['source']['green'], $value['source']['blue']);
+    imagecolorset($image_processed, $source_color, $value['swap']['red'], $value['swap']['green'], $value['swap']['blue']);
   }
 
   // Set the content headers.
@@ -164,13 +165,13 @@ function swap_colors ($image_file, $image, $source_colors, $swap_colors) {
   header("Content-Disposition: inline; filename=\"{$image_file}\"");
 
   // Output the PNG file.
-  imagepng($image);
+  imagepng($image_processed);
 
   // Deallocate the color.
-  imagecolordeallocate($image, $source_color);
+  imagecolordeallocate($image_processed, $source_color);
 
   // Destroy the image to free up memory.
-  imagedestroy($image);
+  imagedestroy($image_processed);
 
   exit;
 
@@ -195,21 +196,20 @@ if (TRUE) {
   $image_processed = imagecreatefrompng($image_file);
   // $color_sample = imagecolorat($image_processed, 0, 130);
   // $color_sample_index = imagecolorsforindex($image_processed, $color_sample);
+
+  // Detect the color closest to the set values.
   // $color_sample_index = imagecolorclosest($image_processed, 239, 239, 239);
   // $color_sample_index = imagecolorclosest($image_processed, 0, 0, 0);
 
-  // Set a source color array.
-  $source_colors = array();
-  $source_colors[] = imagecolorclosest($image_processed, 239, 239, 239);
-  $source_colors[] = imagecolorclosest($image_processed, 0, 0, 0);
-
-  // Set a swap color array.
-  $swap_colors = array();
-  $swap_colors[] = array('red' => 49, 'green' => 150, 'blue' => 246);
-  $swap_colors[] = array('red' => 246, 'green' => 150, 'blue' => 49);
+  // Set the color map array.
+  $color_swap_map = array();
+  $color_swap_map[0]['source'] = array('red' => 239, 'green' => 239, 'blue' => 239);
+  $color_swap_map[0]['swap'] = array('red' => 49, 'green' => 150, 'blue' => 246);
+  $color_swap_map[1]['source'] = array('red' => 0, 'green' => 0, 'blue' => 0);
+  $color_swap_map[1]['swap'] = array('red' => 246, 'green' => 150, 'blue' => 49);
 
   // Actually swap the colors.
-  swap_colors($image_file, $image_processed, $source_colors, $swap_colors);
+  swap_colors($image_file, $image_processed, $color_swap_map);
 
 }
 else {
