@@ -29,13 +29,13 @@
 //**************************************************************************************//
 // Here is where the magic happens!
 
-# $image_file = 'waveform1.png';
-# $image_file = 'waveform2.png';
+// $image_file = 'waveform1.png';
+// $image_file = 'waveform2.png';
 $image_file = 'waveform3.png';
 
 $source_width = 1800;
-# $source_height = 280; # Full size waveform which is just a 2x mirror of the waveform itself.
-$source_height = 140; # The waveform is just 140 pixels high.
+// $source_height = 280; // Full size waveform which is just a 2x mirror of the waveform itself.
+$source_height = 140; // The waveform is just 140 pixels high.
 
 $image_processed = imagecreatefrompng($image_file);
 imagealphablending($image_processed, true);
@@ -63,75 +63,80 @@ for ($width = 0; $width < $source_width; $width++) {
 	  $rgb_array = imagecolorsforindex($image_processed, $color_index);
 	}
 
-	# Peak detection is based on whether there is an alpha channel or not.
+	// Peak detection is based on whether there is an alpha channel or not.
 	if ($rgb_array['alpha'] == 127) {
 	  break;
 	}
 
-  } # $height loop.
+  } // $height loop.
 
-  # Value is based on the delta between the actual height versus detected height.
+  // Value is based on the delta between the actual height versus detected height.
   $waveform_data[] = $source_height - $height;
 
-} # $width loop.
+} // $width loop.
 
-# Simple JSON data output.
-if (FALSE) {
+//**************************************************************************************//
+// Generate and render JSON data output.
+function render_JSON ($waveform_data, $source_width, $source_height) {
 
-  # Set a data array.
+  // Set a data array.
   $data = array();
   $data['width'] = $source_width;
   $data['height'] = $source_height;
   $data['samples'] = $waveform_data;
 
-  # Encode the JSON.
+  // Encode the JSON.
   $ret = json_encode((object) $data);
   $ret = str_replace('\/','/', $ret);
 
-  # Output the JSON data.
+  // Output the JSON data.
   header('Content-Type: application/json');
   print_r($ret);
 
-}
+} // render_JSON
 
-# Tests on how to dynamically render a new waveform.
-if (TRUE) {
+//**************************************************************************************//
+// Render a PNG based on the raw JSON data.
+function render_image ($waveform_data, $source_width, $source_height) {
 
-  # Create the image canvas.
+  // Create the image canvas.
   $image = imagecreate($source_width, $source_height * 2);
 
-  # Set the colors.
+  // Set the colors.
   $background_color = imagecolorallocate($image, 187, 187, 187);
   $waveform_color = imagecolorallocate($image, 246, 150, 49);
 
-  # Define a color as transparent.
+  // Define a color as transparent.
   imagecolortransparent($image, $background_color);
-  # imagecolortransparent($image, $waveform_color);
+  // imagecolortransparent($image, $waveform_color);
 
-  # Set the line thickness.
+  // Set the line thickness.
   imagesetthickness($image, 1);
 
-  # Draw the lines of the waveform.
+  // Draw the lines of the waveform.
   foreach ($waveform_data as $key => $value) {
-   # imageline($image, $key, $value, $key, ($source_height * 2) - $value, $waveform_color);
+   // imageline($image, $key, $value, $key, ($source_height * 2) - $value, $waveform_color);
    imageline($image, $key, ($source_height - $value), $key, ($source_height + $value), $waveform_color);
   }
 
-  # Set the content headers.
+  // Set the content headers.
   header("Content-type: image/png" );
 
-  # Set the content headers.
+  // Set the content headers.
   imagepng($image);
 
-  # Deallocate the colors.
+  // Deallocate the colors.
   imagecolordeallocate($image, $background_color);
   imagecolordeallocate($image, $waveform_color);
 
-  # Destroy the image to free up memory.
+  // Destroy the image to free up memory.
   imagedestroy($image);
 
   exit;
 
-}
+} // render_image
+
+//**************************************************************************************//
+render_image($waveform_data, $source_width, $source_height);
 
 ?>
