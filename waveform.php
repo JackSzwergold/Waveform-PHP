@@ -16,6 +16,7 @@
  * Version: 2016-02-28, js: creation
  *          2016-02-28, js: development & cleanup
  *          2016-02-29, js: logic to regenerate waveform from raw waveform data.
+ *          2016-02-29, js: restructuring into functions.
  *
  */
 
@@ -29,51 +30,53 @@
 //**************************************************************************************//
 // Here is where the magic happens!
 
-// $image_file = 'waveform1.png';
-// $image_file = 'waveform2.png';
-$image_file = 'waveform3.png';
+//**************************************************************************************//
+// Generate and render JSON data output.
+function parse_waveform_image_data ($image_file, $source_width, $source_height) {
 
-$source_width = 1800;
-// $source_height = 280; // Full size waveform which is just a 2x mirror of the waveform itself.
-$source_height = 140; // The waveform is just 140 pixels high.
+	$image_processed = imagecreatefrompng($image_file);
+	imagealphablending($image_processed, true);
+	imagesavealpha($image_processed, true);
 
-$image_processed = imagecreatefrompng($image_file);
-imagealphablending($image_processed, true);
-imagesavealpha($image_processed, true);
+	$waveform_data = array();
 
-$waveform_data = array();
-for ($width = 0; $width < $source_width; $width++) {
+	for ($width = 0; $width < $source_width; $width++) {
 
-  for ($height = 0; $height < $source_height; $height++) {
+	  for ($height = 0; $height < $source_height; $height++) {
 
-	$color_index = @imagecolorat($image_processed, $width, $height);
+		$color_index = @imagecolorat($image_processed, $width, $height);
 
-	if (FALSE) {
-	  $rgb_array = array();
+		if (FALSE) {
+		  $rgb_array = array();
 
-	  $red = ($color_index >> 16) & 0xFF;
-	  $green = ($color_index >> 8) & 0xFF;
-	  $blue = $color_index & 0xFF;
+		  $red = ($color_index >> 16) & 0xFF;
+		  $green = ($color_index >> 8) & 0xFF;
+		  $blue = $color_index & 0xFF;
 
-	  $rgb_array['red'] = intval($red);
-	  $rgb_array['green'] = intval($green);
-	  $rgb_array['blue'] = intval($blue);
-	}
-	else {
-	  $rgb_array = imagecolorsforindex($image_processed, $color_index);
-	}
+		  $rgb_array['red'] = intval($red);
+		  $rgb_array['green'] = intval($green);
+		  $rgb_array['blue'] = intval($blue);
+		}
+		else {
+		  $rgb_array = imagecolorsforindex($image_processed, $color_index);
+		}
 
-	// Peak detection is based on whether there is an alpha channel or not.
-	if ($rgb_array['alpha'] == 127) {
-	  break;
-	}
+		// Peak detection is based on whether there is an alpha channel or not.
+		if ($rgb_array['alpha'] == 127) {
+		  break;
+		}
 
-  } // $height loop.
+	  } // $height loop.
 
-  // Value is based on the delta between the actual height versus detected height.
-  $waveform_data[] = $source_height - $height;
+	  // Value is based on the delta between the actual height versus detected height.
+	  $waveform_data[] = $source_height - $height;
 
-} // $width loop.
+	} // $width loop.
+
+	return $waveform_data;
+
+} // parse_waveform_image_data
+
 
 //**************************************************************************************//
 // Generate and render JSON data output.
@@ -94,6 +97,7 @@ function render_JSON ($waveform_data, $source_width, $source_height) {
   print_r($ret);
 
 } // render_JSON
+
 
 //**************************************************************************************//
 // Render a PNG based on the raw JSON data.
@@ -136,7 +140,23 @@ function render_image ($waveform_data, $source_width, $source_height) {
 
 } // render_image
 
+
 //**************************************************************************************//
+
+// Set the image file.
+// $image_file = 'waveform1.png';
+// $image_file = 'waveform2.png';
+$image_file = 'waveform3.png';
+
+// Set the width and height.
+$source_width = 1800;
+// $source_height = 280; // Full size waveform which is just a 2x mirror of the waveform itself.
+$source_height = 140; // The waveform is just 140 pixels high.
+
+// Parse the waveform image data.
+$waveform_data = parse_waveform_image_data($image_file, $source_width, $source_height);
+
+// Render the image.
 render_image($waveform_data, $source_width, $source_height);
 
 ?>
