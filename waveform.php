@@ -123,6 +123,9 @@ function render_image ($waveform_data, $source_width, $source_height) {
    imageline($image, $key, ($source_height - $value), $key, ($source_height + $value), $waveform_color);
   }
 
+  // Testing the color swappping logic.
+  swap_colors($image, $background_color, array('red' => 150, 'green' => 49, 'blue' => 246));
+
   // Set the content headers.
   header("Content-type: image/png" );
 
@@ -143,7 +146,7 @@ function render_image ($waveform_data, $source_width, $source_height) {
 
 //**************************************************************************************//
 // Swap one color for another.
-function swap_colors ($waveform_data, $image, $source_color, $swap_color) {
+function swap_colors ($image, $source_color, $swap_color) {
 
   // Swap colors based on the index with a new RGB color.
   imagecolorset($image, $source_color, 150, 49, 246);
