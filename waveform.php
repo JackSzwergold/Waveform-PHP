@@ -17,6 +17,7 @@
  *          2016-02-28, js: development & cleanup
  *          2016-02-29, js: logic to regenerate waveform from raw waveform data.
  *          2016-02-29, js: restructuring into functions.
+ *          2016-02-29, js: color swapping works well and more efficiently than redrawing.
  *
  */
 
@@ -204,9 +205,9 @@ if (TRUE) {
   // Set the color map array.
   $color_swap_map = array();
   $color_swap_map[0]['source'] = array('red' => 239, 'green' => 239, 'blue' => 239);
-  $color_swap_map[0]['swap'] = array('red' => 49, 'green' => 150, 'blue' => 246);
+  $color_swap_map[0]['swap'] = array('red' => 95, 'green' => 95, 'blue' => 95);
   $color_swap_map[1]['source'] = array('red' => 0, 'green' => 0, 'blue' => 0);
-  $color_swap_map[1]['swap'] = array('red' => 246, 'green' => 150, 'blue' => 49);
+  $color_swap_map[1]['swap'] = array('red' => 255, 'green' => 255, 'blue' => 204);
 
   // Actually swap the colors.
   swap_colors($image_file, $image_processed, $color_swap_map);
@@ -224,6 +225,7 @@ else {
 
   // Render the image.
   render_image($image_file, $waveform_data, $source_width, $source_height);
+
 }
 
 ?>
