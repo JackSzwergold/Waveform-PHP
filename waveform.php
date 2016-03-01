@@ -101,7 +101,7 @@ function render_JSON ($waveform_data, $source_width, $source_height) {
 
 //**************************************************************************************//
 // Render a PNG based on the raw JSON data.
-function render_image ($waveform_data, $source_width, $source_height) {
+function render_image ($image_file, $waveform_data, $source_width, $source_height) {
 
   // Create the image canvas.
   $image = imagecreate($source_width, $source_height * 2);
@@ -129,10 +129,11 @@ function render_image ($waveform_data, $source_width, $source_height) {
    imageline($image, $key, ($source_height - $value), $key, ($source_height + $value), $waveform_color);
   }
 
-  // swap_colors($image, $background_color, array('red' => 150, 'green' => 49, 'blue' => 246));
+  // swap_colors($image_file, $image, $background_color, array('red' => 150, 'green' => 49, 'blue' => 246));
 
   // Set the content headers.
   header("Content-type: image/png" );
+  header("Content-Disposition: inline; filename=\"{$image_file}\"");
 
   // Output the PNG file.
   imagepng($image);
@@ -151,13 +152,14 @@ function render_image ($waveform_data, $source_width, $source_height) {
 
 //**************************************************************************************//
 // Swap one color for another.
-function swap_colors ($image, $source_color, $swap_color) {
+function swap_colors ($image_file, $image, $source_color, $swap_color) {
 
   // Swap colors based on the index with a new RGB color.
   imagecolorset($image, $source_color, $swap_color['red'], $swap_color['green'], $swap_color['blue']);
 
   // Set the content headers.
   header("Content-type: image/png" );
+  header("Content-Disposition: inline; filename=\"{$image_file}\"");
 
   // Output the PNG file.
   imagepng($image);
@@ -182,7 +184,7 @@ $image_file = 'waveform3.png';
 
 // Testing the color swappping logic.
 // $image_processed = imagecreatefrompng($image_file);
-// $source_color = imagecolorallocatealpha($image_processed, 239, 239, 239, 255);
+// $source_color = imagecolorallocate($image_processed, 239, 239, 239);
 // swap_colors($image_processed, $source_color, array('red' => 150, 'green' => 49, 'blue' => 246));
 
 // Set the width and height.
@@ -194,6 +196,6 @@ $source_height = 140; // The waveform is just 140 pixels high.
 $waveform_data = parse_waveform_image_data($image_file, $source_width, $source_height);
 
 // Render the image.
-render_image($waveform_data, $source_width, $source_height);
+render_image($image_file, $waveform_data, $source_width, $source_height);
 
 ?>
