@@ -180,39 +180,50 @@ function swap_colors ($image_file, $image, $source_colors, $swap_colors) {
 //**************************************************************************************//
 
 // Set the image file.
-// $image_file = 'waveform1.png';
-// $image_file = 'waveform2.png';
-$image_file = 'waveform3.png';
+$image_array = array();
+$image_array[] = 'waveform1.png';
+$image_array[] = 'waveform2.png';
+$image_array[] = 'waveform3.png';
 
-// Testing the color swappping logic.
-$image_processed = imagecreatefrompng($image_file);
-// $color_sample = imagecolorat($image_processed, 0, 130);
-// $color_sample_index = imagecolorsforindex($image_processed, $color_sample);
-// $color_sample_index = imagecolorclosest($image_processed, 239, 239, 239);
-// $color_sample_index = imagecolorclosest($image_processed, 0, 0, 0);
+shuffle($image_array);
 
-// Set a source color array.
-$source_colors = array();
-$source_colors[] = imagecolorclosest($image_processed, 239, 239, 239);
-$source_colors[] = imagecolorclosest($image_processed, 0, 0, 0);
+$image_file = $image_array[0];
 
-// Set a swap color array.
-$swap_colors = array();
-$swap_colors[] = array('red' => 150, 'green' => 49, 'blue' => 246);
-$swap_colors[] = array('red' => 246, 'green' => 150, 'blue' => 49);
+if (TRUE) {
 
-// Actually swap the colors.
-swap_colors($image_file, $image_processed, $source_colors, $swap_colors);
+  // Testing the color swappping logic.
+  $image_processed = imagecreatefrompng($image_file);
+  // $color_sample = imagecolorat($image_processed, 0, 130);
+  // $color_sample_index = imagecolorsforindex($image_processed, $color_sample);
+  // $color_sample_index = imagecolorclosest($image_processed, 239, 239, 239);
+  // $color_sample_index = imagecolorclosest($image_processed, 0, 0, 0);
 
-// Set the width and height.
-$source_width = 1800;
-// $source_height = 280; // Full size waveform which is just a 2x mirror of the waveform itself.
-$source_height = 140; // The waveform is just 140 pixels high.
+  // Set a source color array.
+  $source_colors = array();
+  $source_colors[] = imagecolorclosest($image_processed, 239, 239, 239);
+  $source_colors[] = imagecolorclosest($image_processed, 0, 0, 0);
 
-// Parse the waveform image data.
-$waveform_data = parse_waveform_image_data($image_file, $source_width, $source_height);
+  // Set a swap color array.
+  $swap_colors = array();
+  $swap_colors[] = array('red' => 150, 'green' => 49, 'blue' => 246);
+  $swap_colors[] = array('red' => 246, 'green' => 150, 'blue' => 49);
 
-// Render the image.
-render_image($image_file, $waveform_data, $source_width, $source_height);
+  // Actually swap the colors.
+  swap_colors($image_file, $image_processed, $source_colors, $swap_colors);
+
+}
+else {
+
+  // Set the width and height.
+  $source_width = 1800;
+  // $source_height = 280; // Full size waveform which is just a 2x mirror of the waveform itself.
+  $source_height = 140; // The waveform is just 140 pixels high.
+
+  // Parse the waveform image data.
+  $waveform_data = parse_waveform_image_data($image_file, $source_width, $source_height);
+
+  // Render the image.
+  render_image($image_file, $waveform_data, $source_width, $source_height);
+}
 
 ?>
