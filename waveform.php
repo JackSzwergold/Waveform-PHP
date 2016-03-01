@@ -184,9 +184,10 @@ $image_file = 'waveform3.png';
 
 // Testing the color swappping logic.
 $image_processed = imagecreatefrompng($image_file);
-$color_sample = imagecolorat($image_processed, 0, 0);
+$color_sample = imagecolorat($image_processed, 0, 130);
 $color_sample_index = imagecolorsforindex($image_processed, $color_sample);
-// $color_sample_index = imagecolorallocate($image_processed, 239, 239, 239);
+$color_sample_index = imagecolorclosest($image_processed, 239, 239, 239);
+// $color_sample_index = imagecolorclosest($image_processed, 0, 0, 0);
 swap_colors($image_file, $image_processed, $color_sample_index, array('red' => 150, 'green' => 49, 'blue' => 246));
 
 // Set the width and height.
