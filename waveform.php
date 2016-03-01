@@ -205,7 +205,7 @@ if (TRUE) {
 
   // Set a swap color array.
   $swap_colors = array();
-  $swap_colors[] = array('red' => 150, 'green' => 49, 'blue' => 246);
+  $swap_colors[] = array('red' => 49, 'green' => 150, 'blue' => 246);
   $swap_colors[] = array('red' => 246, 'green' => 150, 'blue' => 49);
 
   // Actually swap the colors.
