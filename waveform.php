@@ -34,46 +34,46 @@
 // Generate and render JSON data output.
 function parse_waveform_image_data ($image_file, $source_width, $source_height) {
 
-	$image_processed = imagecreatefrompng($image_file);
-	imagealphablending($image_processed, true);
-	imagesavealpha($image_processed, true);
+  $image_processed = imagecreatefrompng($image_file);
+  imagealphablending($image_processed, true);
+  imagesavealpha($image_processed, true);
 
-	$waveform_data = array();
+  $waveform_data = array();
 
-	for ($width = 0; $width < $source_width; $width++) {
+  for ($width = 0; $width < $source_width; $width++) {
 
-	  for ($height = 0; $height < $source_height; $height++) {
+    for ($height = 0; $height < $source_height; $height++) {
 
-		$color_index = @imagecolorat($image_processed, $width, $height);
+      $color_index = @imagecolorat($image_processed, $width, $height);
 
-		if (FALSE) {
-		  $rgb_array = array();
+      if (FALSE) {
+        $rgb_array = array();
 
-		  $red = ($color_index >> 16) & 0xFF;
-		  $green = ($color_index >> 8) & 0xFF;
-		  $blue = $color_index & 0xFF;
+        $red = ($color_index >> 16) & 0xFF;
+        $green = ($color_index >> 8) & 0xFF;
+        $blue = $color_index & 0xFF;
 
-		  $rgb_array['red'] = intval($red);
-		  $rgb_array['green'] = intval($green);
-		  $rgb_array['blue'] = intval($blue);
-		}
-		else {
-		  $rgb_array = imagecolorsforindex($image_processed, $color_index);
-		}
+        $rgb_array['red'] = intval($red);
+        $rgb_array['green'] = intval($green);
+        $rgb_array['blue'] = intval($blue);
+      }
+      else {
+        $rgb_array = imagecolorsforindex($image_processed, $color_index);
+      }
 
-		// Peak detection is based on whether there is an alpha channel or not.
-		if ($rgb_array['alpha'] == 127) {
+      // Peak detection is based on whether there is an alpha channel or not.
+      if ($rgb_array['alpha'] == 127) {
 		  break;
-		}
+      }
 
-	  } // $height loop.
+    } // $height loop.
 
-	  // Value is based on the delta between the actual height versus detected height.
-	  $waveform_data[] = $source_height - $height;
+    // Value is based on the delta between the actual height versus detected height.
+    $waveform_data[] = $source_height - $height;
 
-	} // $width loop.
+  } // $width loop.
 
-	return $waveform_data;
+  return $waveform_data;
 
 } // parse_waveform_image_data
 
