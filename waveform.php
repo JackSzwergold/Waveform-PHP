@@ -107,8 +107,16 @@ function render_image ($waveform_data, $source_width, $source_height) {
   $image = imagecreate($source_width, $source_height * 2);
 
   // Set the colors.
-  $background_color = imagecolorallocate($image, 187, 187, 187);
-  $waveform_color = imagecolorallocate($image, 246, 150, 49);
+  if (TRUE) {
+    // $background_color = imagecolorallocate($image, 239, 239, 239);
+    $background_color = imagecolorallocate($image, 187, 187, 187);
+    $waveform_color = imagecolorallocate($image, 246, 150, 49);
+  }
+  else {
+    // $background_color = imagecolorallocatealpha($image, 239, 239, 239, 255);
+    $background_color = imagecolorallocatealpha($image, 187, 187, 187, 255);
+    $waveform_color = imagecolorallocatealpha($image, 246, 150, 49, 255);
+  }
 
   // Define a color as transparent.
   imagecolortransparent($image, $background_color);
@@ -122,9 +130,6 @@ function render_image ($waveform_data, $source_width, $source_height) {
    // imageline($image, $key, $value, $key, ($source_height * 2) - $value, $waveform_color);
    imageline($image, $key, ($source_height - $value), $key, ($source_height + $value), $waveform_color);
   }
-
-  // Testing the color swappping logic.
-  swap_colors($image, $background_color, array('red' => 150, 'green' => 49, 'blue' => 246));
 
   // Set the content headers.
   header("Content-type: image/png" );
@@ -174,6 +179,11 @@ function swap_colors ($image, $source_color, $swap_color) {
 // $image_file = 'waveform1.png';
 // $image_file = 'waveform2.png';
 $image_file = 'waveform3.png';
+
+// Testing the color swappping logic.
+// $image_processed = imagecreatefrompng($image_file);
+// $source_color = imagecolorallocate($image_processed, 239, 239, 239);
+// swap_colors($image_processed, $source_color, array('red' => 150, 'green' => 49, 'blue' => 246));
 
 // Set the width and height.
 $source_width = 1800;
