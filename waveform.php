@@ -126,7 +126,7 @@ function render_image ($waveform_data, $source_width, $source_height) {
   // Set the content headers.
   header("Content-type: image/png" );
 
-  // Set the content headers.
+  // Output the PNG file.
   imagepng($image);
 
   // Deallocate the colors.
@@ -139,6 +139,30 @@ function render_image ($waveform_data, $source_width, $source_height) {
   exit;
 
 } // render_image
+
+
+//**************************************************************************************//
+// Swap one color for another.
+function swap_colors ($waveform_data, $image, $source_color, $swap_color) {
+
+  // Swap colors based on the index with a new RGB color.
+  imagecolorset($image, $source_color, 150, 49, 246);
+
+  // Set the content headers.
+  header("Content-type: image/png" );
+
+  // Output the PNG file.
+  imagepng($image);
+
+  // Deallocate the color.
+  imagecolordeallocate($image, $source_color);
+
+  // Destroy the image to free up memory.
+  imagedestroy($image);
+
+  exit;
+
+} // swap_colors
 
 
 //**************************************************************************************//
