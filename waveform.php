@@ -62,9 +62,12 @@ function parse_waveform_image_data ($image_file, $source_width, $source_height) 
         $rgb_array = imagecolorsforindex($image_processed, $color_index);
       }
 
-      // Peak detection is based on whether there is an alpha channel or not.
-      if ($rgb_array['alpha'] == 127) {
-		  break;
+      // Peak detection is based on matching a transparent PNG value.
+      $match_color_index = array(0, 0, 0, 127);
+      $diff_value = array_diff($match_color_index, array_values($rgb_array));
+      // if ($rgb_array['alpha'] == 127) {
+      if (empty($diff_value)) {
+        break;
       }
 
     } // $height loop.
@@ -110,11 +113,11 @@ function render_image ($image_file, $waveform_data, $source_width, $source_heigh
   // Set the colors.
   if (FALSE) {
     $background_color = imagecolorallocate($image, 239, 239, 239);
-    $waveform_color = imagecolorallocate($image, 246, 150, 49);
+    $waveform_color = imagecolorallocate($image, 255, 255, 204);
   }
   else {
     $background_color = imagecolorallocatealpha($image, 239, 239, 239, 255);
-    $waveform_color = imagecolorallocatealpha($image, 246, 150, 49, 255);
+    $waveform_color = imagecolorallocatealpha($image, 255, 255, 204, 255);
   }
 
   // Define a color as transparent.
@@ -191,7 +194,7 @@ shuffle($image_array);
 
 $image_file = $image_array[0];
 
-if (TRUE) {
+if (FALSE) {
 
   // Testing the color swappping logic.
   $image_processed = imagecreatefrompng($image_file);
