@@ -189,8 +189,20 @@ $image_processed = imagecreatefrompng($image_file);
 // $color_sample = imagecolorat($image_processed, 0, 130);
 // $color_sample_index = imagecolorsforindex($image_processed, $color_sample);
 // $color_sample_index = imagecolorclosest($image_processed, 239, 239, 239);
-$color_sample_index = imagecolorclosest($image_processed, 0, 0, 0);
-swap_colors($image_file, $image_processed, array($color_sample_index), array(array('red' => 150, 'green' => 49, 'blue' => 246)));
+// $color_sample_index = imagecolorclosest($image_processed, 0, 0, 0);
+
+// Set a source color array.
+$source_colors = array();
+$source_colors[] = imagecolorclosest($image_processed, 239, 239, 239);
+$source_colors[] = imagecolorclosest($image_processed, 0, 0, 0);
+
+// Set a swap color array.
+$swap_colors = array();
+$swap_colors[] = array('red' => 150, 'green' => 49, 'blue' => 246);
+$swap_colors[] = array('red' => 246, 'green' => 150, 'blue' => 49);
+
+// Actually swap the colors.
+swap_colors($image_file, $image_processed, $source_colors, $swap_colors);
 
 // Set the width and height.
 $source_width = 1800;
