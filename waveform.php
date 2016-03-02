@@ -79,11 +79,11 @@ function render_data_as_image ($filename, $waveform_data, $source_width, $source
 
   // Get the RGB values from the hex values.
   $background_rgb = hex_to_rgb($colors['background']);
-  $waveform_rgb = hex_to_rgb($colors['foreground']);
+  $foreground_rgb = hex_to_rgb($colors['foreground']);
 
   // Create the color indexes.
   $background_color = imagecolorallocate($image_processed, $background_rgb['red'], $background_rgb['green'], $background_rgb['blue']);
-  $waveform_color = imagecolorallocate($image_processed, $waveform_rgb['red'], $waveform_rgb['green'], $waveform_rgb['blue']);
+  $waveform_color = imagecolorallocate($image_processed, $foreground_rgb['red'], $foreground_rgb['green'], $foreground_rgb['blue']);
 
   // Set the background color.
   imagefill($image_processed, 0, 0, $background_color);
@@ -146,8 +146,8 @@ function swap_colors ($filename, $color_map) {
     // Set the destination hex values as part of the filename array.
     $filename_array[] = $color_map_value['dst'];
 
-    $source_color_index = imagecolorclosest($image_processed, $rgb_src['red'], $rgb_src['green'], $rgb_src['blue']);
-    imagecolorset($image_processed, $source_color_index, $rgb_dst['red'], $rgb_dst['green'], $rgb_dst['blue']);
+    $source_color_index[$color_map_key] = imagecolorclosest($image_processed, $rgb_src['red'], $rgb_src['green'], $rgb_src['blue']);
+    imagecolorset($image_processed, $source_color_index[$color_map_key], $rgb_dst['red'], $rgb_dst['green'], $rgb_dst['blue']);
 
   }
 
@@ -156,13 +156,14 @@ function swap_colors ($filename, $color_map) {
   $new_filename = $pathinfo['filename'] . '_' . implode('_', $filename_array) . '.' . $pathinfo['extension'];
 
   // Define a color as transparent.
-  // imagecolortransparent($image_processed, $source_color_index);
+  imagecolortransparent($image_processed, $source_color_index['background']);
+  // imagecolortransparent($image_processed, $source_color_index['foreground']);
 
   if (TRUE) {
-    render_image_tag($image_processed, $new_filename, array($source_color_index));
+    render_image_tag($image_processed, $new_filename, $source_color_index);
   }
   else {
-    render_png_image($image_processed, $new_filename, array($source_color_index));
+    render_png_image($image_processed, $new_filename, $source_color_index);
   }
 
 } // swap_colors
@@ -229,7 +230,7 @@ function render_image_tag ($image_processed, $new_filename, $source_color_index)
   $image_base64_data = base64_encode($image_processed_data);
   $image_base64 = 'data:image/png;base64,' . $image_base64_data;
 
-  $data_div = sprintf('<div style="background-image:url(%1$s); background-repeat: no-repeat; width: %2$spx; height: %3$spx; padding: 10px;">', $image_base64, 1800, 280)
+  $data_div = sprintf('<div style="background-color: #aa0000; background-image: url(%1$s); background-repeat: no-repeat; width: %2$spx; height: %3$spx; padding: 10px;">', $image_base64, 1800, 280)
             . '<h3>This is an image rendered as direct data background via CSS.</h3>'
             . '</div>'
             ;
@@ -240,10 +241,10 @@ function render_image_tag ($image_processed, $new_filename, $source_color_index)
     echo $data_div;
   }
   else {
-    echo sprintf('<div style="width: %1$s; height: %2$s; margin: 0 0 10px 0; padding: 0; overflow: hidden;">', '30%', '140px');
+    echo sprintf('<div style="background-color: #aa0000; width: %1$s; height: %2$s; margin: 0 0 10px 0; padding: 0; overflow: hidden;">', '30%', '140px');
     echo $image_tag;
     echo '</div>';
-    echo sprintf('<div style="width: %1$s; height: %2$s; margin: 0 0 10px 0; padding: 0; overflow: hidden;">', '100%', '140px');
+    echo sprintf('<div style="background-color: #aa0000; width: %1$s; height: %2$s; margin: 0 0 10px 0; padding: 0; overflow: hidden;">', '100%', '140px');
     echo $image_tag;
     echo '</div>';
   }
@@ -292,10 +293,10 @@ else {
   $color_map = array();
 
   // Waveform background color.
-  $color_map[0] = array('src' => 'efefef', 'dst' => '888888');
+  $color_map['background'] = array('src' => 'efefef', 'dst' => '888888');
 
   // Waveform foreround color.
-  $color_map[1] = array('src' => '000000', 'dst' => '335511');
+  $color_map['foreground'] = array('src' => '000000', 'dst' => '335511');
 
   // Actually swap the colors.
   swap_colors($filename, $color_map);
