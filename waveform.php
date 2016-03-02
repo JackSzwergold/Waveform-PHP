@@ -155,6 +155,9 @@ function swap_colors ($filename, $color_map) {
   $pathinfo = pathinfo($filename);
   $new_filename = $pathinfo['filename'] . '_' . implode('_', $filename_array) . '.' . $pathinfo['extension'];
 
+  // Define a color as transparent.
+  // imagecolortransparent($image_processed, $source_color_index);
+
   if (TRUE) {
     render_image_tag($image_processed, $new_filename, array($source_color_index));
   }
