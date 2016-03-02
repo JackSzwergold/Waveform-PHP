@@ -54,7 +54,6 @@ function parse_waveform_image_data ($filename, $source_width, $source_height) {
       // Peak detection is based on matching a transparent PNG value.
       $match_color_index = array(0, 0, 0, 127);
       $diff_value = array_diff($match_color_index, array_values($rgb_array));
-      // if ($rgb_array['alpha'] == 127) {
       if (empty($diff_value)) {
         break;
       }
@@ -77,7 +76,9 @@ function render_data_as_image ($filename, $waveform_data, $source_width, $source
 
   // Create the image canvas.
   $image = imagecreate($source_width, $source_height * 2);
-
+  $red = imagecolorallocate($image, 255, 0, 0);
+  imagefill($image, 0, 0, $red);
+  
   // Set the colors.
   $background_rgb = hex_to_rgb($color_map['src']);
   $waveform_rgb = hex_to_rgb($color_map['dst']);
