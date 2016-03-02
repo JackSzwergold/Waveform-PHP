@@ -267,21 +267,16 @@ shuffle($image_array);
 
 $filename = $image_array[0];
 
-if (TRUE) {
-
-  // Set the width and height.
-  $source_width = 1800;
-  // $source_height = 280; // Full size waveform which is just a 2x mirror of the waveform itself.
-  $source_height = 140; // The waveform is just 140 pixels high.
+if (FALSE) {
 
   // Parse the waveform image data.
-  $waveform_data = parse_waveform_image_data($filename, $source_width, $source_height);
+  $waveform_data = parse_waveform_image_data($filename, 1800, 140);
 
   // Waveform colors.
-  $colors = array('background' => 'efefef', 'foreground' => 'ffff00');
+  $colors = array('background' => 'efefef', 'foreground' => '335511');
 
   // Render the data as an image.
-  render_data_as_image($filename, $waveform_data, $source_width, $source_height, $colors);
+  render_data_as_image($filename, $waveform_data, 1800, 140, $colors);
 
 }
 else {
@@ -293,7 +288,7 @@ else {
   $color_map[0] = array('src' => 'efefef', 'dst' => '888888');
 
   // Waveform foreround color.
-  $color_map[1] = array('src' => '000000', 'dst' => 'ffff00');
+  $color_map[1] = array('src' => '000000', 'dst' => '335511');
 
   // Actually swap the colors.
   swap_colors($filename, $color_map);
