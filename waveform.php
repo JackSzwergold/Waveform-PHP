@@ -169,10 +169,10 @@ function swap_colors ($filename, $color_map) {
   $new_filename = $pathinfo['filename'] . '_' . implode('_', $filename_array) . '.' . $pathinfo['extension'];
 
   if (TRUE) {
-    render_css_image($image_processed, $source_color_index, $new_filename);
+    render_css_image($image_processed, $new_filename, $source_color_index);
   }
   else {
-    render_png_image($image_processed, $source_color_index, $new_filename);
+    render_png_image($image_processed, $new_filename, $source_color_index);
   }
 
 } // swap_colors
@@ -201,7 +201,7 @@ function render_json_data ($waveform_data, $source_width, $source_height) {
 
 //**************************************************************************************//
 // Render the image.
-function render_png_image ($image_processed, $source_color_index, $new_filename) {
+function render_png_image ($image_processed, $new_filename, $source_color_index) {
 
   // Set the content headers.
   header("Content-type: image/png" );
@@ -223,7 +223,7 @@ function render_png_image ($image_processed, $source_color_index, $new_filename)
 
 //**************************************************************************************//
 // Render the CSS.
-function render_css_image ($image_processed, $source_colorm, $new_filename) {
+function render_css_image ($image_processed, $new_filename, $source_color_index) {
 
   // Set the content headers.
   // header("Content-type: text/plain" );
