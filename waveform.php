@@ -96,7 +96,7 @@ function render_data_as_image ($filename, $waveform_data, $source_width, $source
 
   // Draw the lines of the waveform.
   foreach ($waveform_data as $key => $value) {
-   imageline($image, $key, ($source_height - $value), $key, ($source_height + $value), $waveform_color);
+    imageline($image, $key, ($source_height - $value), $key, ($source_height + $value), $waveform_color);
   }
 
   // Set the content headers.
