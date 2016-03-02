@@ -75,45 +75,32 @@ function parse_waveform_image_data ($filename, $source_width, $source_height) {
 function render_data_as_image ($filename, $waveform_data, $source_width, $source_height, $colors) {
 
   // Create the image canvas.
-  $image = imagecreate($source_width, $source_height * 2);
+  $image_processed = imagecreate($source_width, $source_height * 2);
 
   // Get the RGB values from the hex values.
   $background_rgb = hex_to_rgb($colors['background']);
   $waveform_rgb = hex_to_rgb($colors['foreground']);
 
   // Create the color indexes.
-  $background_color = imagecolorallocate($image, $background_rgb['red'], $background_rgb['green'], $background_rgb['blue']);
-  $waveform_color = imagecolorallocate($image, $waveform_rgb['red'], $waveform_rgb['green'], $waveform_rgb['blue']);
+  $background_color = imagecolorallocate($image_processed, $background_rgb['red'], $background_rgb['green'], $background_rgb['blue']);
+  $waveform_color = imagecolorallocate($image_processed, $waveform_rgb['red'], $waveform_rgb['green'], $waveform_rgb['blue']);
 
   // Set the background color.
-  imagefill($image, 0, 0, $background_color);
+  imagefill($image_processed, 0, 0, $background_color);
 
   // Define a color as transparent.
-  imagecolortransparent($image, $background_color);
+  imagecolortransparent($image_processed, $background_color);
 
   // Set the line thickness.
-  imagesetthickness($image, 1);
+  imagesetthickness($image_processed, 1);
 
   // Draw the lines of the waveform.
   foreach ($waveform_data as $key => $value) {
-    imageline($image, $key, ($source_height - $value), $key, ($source_height + $value), $waveform_color);
+    imageline($image_processed, $key, ($source_height - $value), $key, ($source_height + $value), $waveform_color);
   }
 
-  // Set the content headers.
-  header("Content-type: image/png" );
-  header("Content-Disposition: inline; filename=\"{$filename}\"");
-
-  // Output the PNG file.
-  imagepng($image);
-
-  // Deallocate the colors.
-  imagecolordeallocate($image, $background_color);
-  imagecolordeallocate($image, $waveform_color);
-
-  // Destroy the image to free up memory.
-  imagedestroy($image);
-
-  exit;
+  $deallocate_colors = array($background_color, $waveform_color);
+  render_png_image ($image_processed, null, $deallocate_colors);
 
 } // render_data_as_image
 
@@ -169,10 +156,10 @@ function swap_colors ($filename, $color_map) {
   $new_filename = $pathinfo['filename'] . '_' . implode('_', $filename_array) . '.' . $pathinfo['extension'];
 
   if (TRUE) {
-    render_css_image($image_processed, $new_filename, $source_color_index);
+    render_css_image($image_processed, $new_filename, array($source_color_index));
   }
   else {
-    render_png_image($image_processed, $new_filename, $source_color_index);
+    render_png_image($image_processed, $new_filename, array($source_color_index));
   }
 
 } // swap_colors
@@ -201,7 +188,7 @@ function render_json_data ($waveform_data, $source_width, $source_height) {
 
 //**************************************************************************************//
 // Render the image.
-function render_png_image ($image_processed, $new_filename, $source_color_index) {
+function render_png_image ($image_processed, $new_filename, $deallocate_colors) {
 
   // Set the content headers.
   header("Content-type: image/png" );
@@ -211,7 +198,9 @@ function render_png_image ($image_processed, $new_filename, $source_color_index)
   imagepng($image_processed);
 
   // Deallocate the color.
-  imagecolordeallocate($image_processed, $source_color_index);
+  foreach ($deallocate_colors as $deallocate_color) {
+    imagecolordeallocate($image_processed, $deallocate_color);
+  }
 
   // Destroy the image to free up memory.
   imagedestroy($image_processed);
@@ -254,7 +243,8 @@ function render_css_image ($image_processed, $new_filename, $source_color_index)
 
 
 //**************************************************************************************//
-// Set the image file.
+// This is where all of the functions actually come into play.
+
 $image_array = array();
 $image_array[] = 'waveform1.png';
 $image_array[] = 'waveform2.png';
@@ -267,7 +257,7 @@ shuffle($image_array);
 
 $filename = $image_array[0];
 
-if (FALSE) {
+if (TRUE) {
 
   // Parse the waveform image data.
   $waveform_data = parse_waveform_image_data($filename, 1800, 140);
