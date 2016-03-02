@@ -72,21 +72,17 @@ function parse_waveform_image_data ($filename, $source_width, $source_height) {
 
 
 //**************************************************************************************//
-// Render a PNG based on the raw JSON data.
-function render_data_as_image ($filename, $waveform_data, $source_width, $source_height) {
+// Render a PNG image based on the raw JSON data.
+function render_data_as_image ($filename, $waveform_data, $source_width, $source_height, $color_map) {
 
   // Create the image canvas.
   $image = imagecreate($source_width, $source_height * 2);
 
   // Set the colors.
-  if (FALSE) {
-    $background_color = imagecolorallocate($image, 239, 239, 239);
-    $waveform_color = imagecolorallocate($image, 255, 255, 204);
-  }
-  else {
-    $background_color = imagecolorallocatealpha($image, 239, 239, 239, 255);
-    $waveform_color = imagecolorallocatealpha($image, 255, 255, 204, 255);
-  }
+  $background_rgb = hex_to_rgb($color_map['src']);
+  $waveform_rgb = hex_to_rgb($color_map['dst']);
+  $background_color = imagecolorallocate($image, $background_rgb['red'], $background_rgb['green'], $background_rgb['blue']);
+  $waveform_color = imagecolorallocate($image, $waveform_rgb['red'], $waveform_rgb['green'], $waveform_rgb['blue']);
 
   // Define a color as transparent.
   imagecolortransparent($image, $background_color);
@@ -100,8 +96,6 @@ function render_data_as_image ($filename, $waveform_data, $source_width, $source
    // imageline($image, $key, $value, $key, ($source_height * 2) - $value, $waveform_color);
    imageline($image, $key, ($source_height - $value), $key, ($source_height + $value), $waveform_color);
   }
-
-  // swap_colors($filename, $image, $background_color, array('red' => 150, 'green' => 49, 'blue' => 246));
 
   // Set the content headers.
   header("Content-type: image/png" );
@@ -271,7 +265,7 @@ shuffle($image_array);
 
 $filename = $image_array[0];
 
-if (FALSE) {
+if (TRUE) {
 
   // Set the width and height.
   $source_width = 1800;
@@ -281,8 +275,14 @@ if (FALSE) {
   // Parse the waveform image data.
   $waveform_data = parse_waveform_image_data($filename, $source_width, $source_height);
 
-  // Render the image.
-  render_data_as_image($filename, $waveform_data, $source_width, $source_height);
+  // Waveform background color.
+  $color_map[0] = array('src' => 'efefef', 'dst' => '888888');
+
+  // Waveform foreround color.
+  $color_map[1] = array('src' => 'efefef', 'dst' => 'ffff00');
+
+  // Render the data as an image.
+  render_data_as_image($filename, $waveform_data, $source_width, $source_height, $color_map[1]);
 
 }
 else {
@@ -293,7 +293,7 @@ else {
   // Waveform background color.
   $color_map[0] = array('src' => 'efefef', 'dst' => '888888');
 
-  // Waveform color.
+  // Waveform foreround color.
   $color_map[1] = array('src' => '000000', 'dst' => 'ffff00');
 
   // Actually swap the colors.
