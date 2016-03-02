@@ -156,7 +156,7 @@ function swap_colors ($filename, $color_map) {
   $new_filename = $pathinfo['filename'] . '_' . implode('_', $filename_array) . '.' . $pathinfo['extension'];
 
   if (TRUE) {
-    render_css_image($image_processed, $new_filename, array($source_color_index));
+    render_image_tag($image_processed, $new_filename, array($source_color_index));
   }
   else {
     render_png_image($image_processed, $new_filename, array($source_color_index));
@@ -211,8 +211,8 @@ function render_png_image ($image_processed, $new_filename, $deallocate_colors) 
 
 
 //**************************************************************************************//
-// Render the CSS.
-function render_css_image ($image_processed, $new_filename, $source_color_index) {
+// Render the image tag.
+function render_image_tag ($image_processed, $new_filename, $source_color_index) {
 
   // Set the content headers.
   // header("Content-type: text/plain" );
@@ -223,13 +223,27 @@ function render_css_image ($image_processed, $new_filename, $source_color_index)
   imagepng($image_processed);
   $image_processed_data = ob_get_contents();
   ob_end_clean();
-  $image_processed_base64 = base64_encode($image_processed_data);
+  $image_base64_data = base64_encode($image_processed_data);
+  $image_base64 = 'data:image/png;base64,' . $image_base64_data;
 
-  $data_css = 'url(data:image/png;base64,' . $image_processed_base64 . ')';
-  $data_div = sprintf('<div style="width: 1800px; height: 280px; padding: 10px; background-image:%s; background-repeat: no-repeat;"><h3>This is an image rendered as direct data background via CSS.</h3></div>', $data_css );
+  $data_div = sprintf('<div style="background-image:url(%1$s); background-repeat: no-repeat; width: %2$spx; height: %3$spx; padding: 10px;">', $image_base64, 1800, 280)
+            . '<h3>This is an image rendered as direct data background via CSS.</h3>'
+            . '</div>'
+            ;
+  $image_tag = sprintf('<img src="%s" width="%2$d" height="%3$d" border="0">', $image_base64, 900, 140);
 
   // Simple HTML document for testing.
-  echo $data_div;
+  if (FALSE) {
+    echo $data_div;
+  }
+  else {
+    echo sprintf('<div style="width: %1$s; height: %2$s; margin: 0 0 10px 0; padding: 0; overflow: hidden;">', '30%', '140px');
+    echo $image_tag;
+    echo '</div>';
+    echo sprintf('<div style="width: %1$s; height: %2$s; margin: 0 0 10px 0; padding: 0; overflow: hidden;">', '100%', '140px');
+    echo $image_tag;
+    echo '</div>';
+  }
 
   // Deallocate the color.
   imagecolordeallocate($image_processed, $source_color_index);
@@ -239,7 +253,7 @@ function render_css_image ($image_processed, $new_filename, $source_color_index)
 
   exit;
 
-} // render_css_image
+} // render_image_tag
 
 
 //**************************************************************************************//
@@ -257,7 +271,7 @@ shuffle($image_array);
 
 $filename = $image_array[0];
 
-if (TRUE) {
+if (FALSE) {
 
   // Parse the waveform image data.
   $waveform_data = parse_waveform_image_data($filename, 1800, 140);
