@@ -72,27 +72,6 @@ function parse_waveform_image_data ($filename, $source_width, $source_height) {
 
 
 //**************************************************************************************//
-// Generate and render JSON data output.
-function render_JSON ($waveform_data, $source_width, $source_height) {
-
-  // Set a data array.
-  $data = array();
-  $data['width'] = $source_width;
-  $data['height'] = $source_height;
-  $data['samples'] = $waveform_data;
-
-  // Encode the JSON.
-  $ret = json_encode((object) $data);
-  $ret = str_replace('\/','/', $ret);
-
-  // Output the JSON data.
-  header('Content-Type: application/json');
-  print_r($ret);
-
-} // render_JSON
-
-
-//**************************************************************************************//
 // Render a PNG based on the raw JSON data.
 function render_data_as_image ($filename, $waveform_data, $source_width, $source_height) {
 
@@ -165,6 +144,7 @@ function hex_to_rgb ($hex_value) {
 
 } // rgb_to_hex
 
+
 //**************************************************************************************//
 // Swap one color for another.
 function swap_colors ($filename, $color_map) {
@@ -193,19 +173,39 @@ function swap_colors ($filename, $color_map) {
   $new_filename = $pathinfo['filename'] . '_' . implode('_', $filename_array) . '.' . $pathinfo['extension'];
 
   if (TRUE) {
-    render_css($image_processed, $source_color, $new_filename);
+    render_css_image($image_processed, $source_color_index, $new_filename);
   }
   else {
-    render_image($image_processed, $source_color, $new_filename);
+    render_png_image($image_processed, $source_color_index, $new_filename);
   }
 
 } // swap_colors
 
 
+//**************************************************************************************//
+// Generate and render JSON data output.
+function render_json_data ($waveform_data, $source_width, $source_height) {
+
+  // Set a data array.
+  $data = array();
+  $data['width'] = $source_width;
+  $data['height'] = $source_height;
+  $data['samples'] = $waveform_data;
+
+  // Encode the JSON.
+  $ret = json_encode((object) $data);
+  $ret = str_replace('\/','/', $ret);
+
+  // Output the JSON data.
+  header('Content-Type: application/json');
+  print_r($ret);
+
+} // render_json_data
+
 
 //**************************************************************************************//
 // Render the image.
-function render_image ($image_processed, $source_color, $new_filename) {
+function render_png_image ($image_processed, $source_color_index, $new_filename) {
 
   // Set the content headers.
   header("Content-type: image/png" );
@@ -215,18 +215,19 @@ function render_image ($image_processed, $source_color, $new_filename) {
   imagepng($image_processed);
 
   // Deallocate the color.
-  imagecolordeallocate($image_processed, $source_color);
+  imagecolordeallocate($image_processed, $source_color_index);
 
   // Destroy the image to free up memory.
   imagedestroy($image_processed);
 
   exit;
 
-} // render_image
+} // render_png_image
+
 
 //**************************************************************************************//
-// Render the image.
-function render_css ($image_processed, $source_colorm, $new_filename) {
+// Render the CSS.
+function render_css_image ($image_processed, $source_colorm, $new_filename) {
 
   // Set the content headers.
   // header("Content-type: text/plain" );
@@ -243,30 +244,20 @@ function render_css ($image_processed, $source_colorm, $new_filename) {
   $data_div = sprintf('<div style="width: 1800px; height: 280px; padding: 10px; background-image:%s; background-repeat: no-repeat;"><h3>This is an image rendered as direct data background via CSS.</h3></div>', $data_css );
 
   // Simple HTML document for testing.
-  echo <<<EOT
-<!DOCTYPE html>
-<html>
-<head>
-	<title>${new_filename}</title>
-</head>
-<body>
-${data_div}
-</body>
-</html>
-EOT;
+  echo $data_div;
 
   // Deallocate the color.
-  imagecolordeallocate($image_processed, $source_color);
+  imagecolordeallocate($image_processed, $source_color_index);
 
   // Destroy the image to free up memory.
   imagedestroy($image_processed);
 
   exit;
 
-} // render_css
+} // render_css_image
+
 
 //**************************************************************************************//
-
 // Set the image file.
 $image_array = array();
 $image_array[] = 'waveform1.png';
