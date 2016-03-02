@@ -94,7 +94,7 @@ function render_JSON ($waveform_data, $source_width, $source_height) {
 
 //**************************************************************************************//
 // Render a PNG based on the raw JSON data.
-function render_image ($filename, $waveform_data, $source_width, $source_height) {
+function render_data_as_image ($filename, $waveform_data, $source_width, $source_height) {
 
   // Create the image canvas.
   $image = imagecreate($source_width, $source_height * 2);
@@ -140,7 +140,7 @@ function render_image ($filename, $waveform_data, $source_width, $source_height)
 
   exit;
 
-} // render_image
+} // render_data_as_image
 
 
 //**************************************************************************************//
@@ -192,6 +192,9 @@ function swap_colors ($filename, $color_map) {
   $pathinfo = pathinfo($filename);
   $new_filename = $pathinfo['filename'] . '_' . implode('_', $filename_array) . '.' . $pathinfo['extension'];
 
+
+
+
   if (TRUE) {
 
     // Set the content headers.
@@ -224,26 +227,33 @@ EOT;
     exit;
   }
   else {
-
-    // Set the content headers.
-    header("Content-type: image/png" );
-    header("Content-Disposition: inline; filename=\"{$new_filename}\"");
-
-    // Output the PNG file.
-    imagepng($image_processed);
-
-    // Deallocate the color.
-    imagecolordeallocate($image_processed, $source_color);
-
-    // Destroy the image to free up memory.
-    imagedestroy($image_processed);
-
-    exit;
-
+    render_image($image_processed, $new_filename, $source_color);
   }
 
 } // swap_colors
 
+
+
+//**************************************************************************************//
+// Render the image.
+function render_image ($image_processed, $new_filename, $source_color) {
+
+  // Set the content headers.
+  header("Content-type: image/png" );
+  header("Content-Disposition: inline; filename=\"{$new_filename}\"");
+
+  // Output the PNG file.
+  imagepng($image_processed);
+
+  // Deallocate the color.
+  imagecolordeallocate($image_processed, $source_color);
+
+  // Destroy the image to free up memory.
+  imagedestroy($image_processed);
+
+  exit;
+
+} // render_image
 
 //**************************************************************************************//
 
@@ -271,7 +281,7 @@ if (FALSE) {
   $waveform_data = parse_waveform_image_data($filename, $source_width, $source_height);
 
   // Render the image.
-  render_image($filename, $waveform_data, $source_width, $source_height);
+  render_data_as_image($filename, $waveform_data, $source_width, $source_height);
 
 }
 else {
