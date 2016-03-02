@@ -192,42 +192,11 @@ function swap_colors ($filename, $color_map) {
   $pathinfo = pathinfo($filename);
   $new_filename = $pathinfo['filename'] . '_' . implode('_', $filename_array) . '.' . $pathinfo['extension'];
 
-
-
-
   if (TRUE) {
-
-    // Set the content headers.
-    // header("Content-type: text/plain" );
-    header("Content-type: text/html;charset=UTF-8" );
-
-    // Capture the rendered image in a variable and base64 encode it.
-    ob_start();
-    imagepng($image_processed);
-    $image_processed_data = ob_get_contents();
-    ob_end_clean();
-    $image_processed_base64 = base64_encode($image_processed_data);
-
-    $data_css = 'url(data:image/png;base64,' . $image_processed_base64 . ')';
-    $data_div = sprintf('<div style="width: 1800px; height: 280px; padding: 10px; background-image:%s; background-repeat: no-repeat;"><h3>This is an image rendered as direct data background via CSS.</h3></div>', $data_css );
-
-    // Simple HTML document for testing.
-    echo <<<EOT
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Waveform Test</title>
-</head>
-<body>
-${data_div}
-</body>
-</html>
-EOT;
-
-    exit;
+    render_css($image_processed, $source_color, $new_filename);
   }
   else {
-    render_image($image_processed, $new_filename, $source_color);
+    render_image($image_processed, $source_color, $new_filename);
   }
 
 } // swap_colors
@@ -236,7 +205,7 @@ EOT;
 
 //**************************************************************************************//
 // Render the image.
-function render_image ($image_processed, $new_filename, $source_color) {
+function render_image ($image_processed, $source_color, $new_filename) {
 
   // Set the content headers.
   header("Content-type: image/png" );
@@ -254,6 +223,47 @@ function render_image ($image_processed, $new_filename, $source_color) {
   exit;
 
 } // render_image
+
+//**************************************************************************************//
+// Render the image.
+function render_css ($image_processed, $source_colorm, $new_filename) {
+
+  // Set the content headers.
+  // header("Content-type: text/plain" );
+  header("Content-type: text/html;charset=UTF-8" );
+
+  // Capture the rendered image in a variable and base64 encode it.
+  ob_start();
+  imagepng($image_processed);
+  $image_processed_data = ob_get_contents();
+  ob_end_clean();
+  $image_processed_base64 = base64_encode($image_processed_data);
+
+  $data_css = 'url(data:image/png;base64,' . $image_processed_base64 . ')';
+  $data_div = sprintf('<div style="width: 1800px; height: 280px; padding: 10px; background-image:%s; background-repeat: no-repeat;"><h3>This is an image rendered as direct data background via CSS.</h3></div>', $data_css );
+
+  // Simple HTML document for testing.
+  echo <<<EOT
+<!DOCTYPE html>
+<html>
+<head>
+	<title>${new_filename}</title>
+</head>
+<body>
+${data_div}
+</body>
+</html>
+EOT;
+
+  // Deallocate the color.
+  imagecolordeallocate($image_processed, $source_color);
+
+  // Destroy the image to free up memory.
+  imagedestroy($image_processed);
+
+  exit;
+
+} // render_css
 
 //**************************************************************************************//
 
