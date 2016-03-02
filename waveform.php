@@ -33,9 +33,9 @@
 
 //**************************************************************************************//
 // Generate and render JSON data output.
-function parse_waveform_image_data ($image_file, $source_width, $source_height) {
+function parse_waveform_image_data ($filename, $source_width, $source_height) {
 
-  $image_processed = imagecreatefrompng($image_file);
+  $image_processed = imagecreatefrompng($filename);
   imagealphablending($image_processed, true);
   imagesavealpha($image_processed, true);
 
@@ -45,22 +45,11 @@ function parse_waveform_image_data ($image_file, $source_width, $source_height) 
 
     for ($height = 0; $height < $source_height; $height++) {
 
+      // Get the index of the color of a pixel.
       $color_index = @imagecolorat($image_processed, $width, $height);
 
-      if (FALSE) {
-        $rgb_array = array();
-
-        $red = ($color_index >> 16) & 0xFF;
-        $green = ($color_index >> 8) & 0xFF;
-        $blue = $color_index & 0xFF;
-
-        $rgb_array['red'] = intval($red);
-        $rgb_array['green'] = intval($green);
-        $rgb_array['blue'] = intval($blue);
-      }
-      else {
-        $rgb_array = imagecolorsforindex($image_processed, $color_index);
-      }
+      // Get the colors for an index.
+      $rgb_array = imagecolorsforindex($image_processed, $color_index);
 
       // Peak detection is based on matching a transparent PNG value.
       $match_color_index = array(0, 0, 0, 127);
@@ -105,7 +94,7 @@ function render_JSON ($waveform_data, $source_width, $source_height) {
 
 //**************************************************************************************//
 // Render a PNG based on the raw JSON data.
-function render_image ($image_file, $waveform_data, $source_width, $source_height) {
+function render_image ($filename, $waveform_data, $source_width, $source_height) {
 
   // Create the image canvas.
   $image = imagecreate($source_width, $source_height * 2);
@@ -133,11 +122,11 @@ function render_image ($image_file, $waveform_data, $source_width, $source_heigh
    imageline($image, $key, ($source_height - $value), $key, ($source_height + $value), $waveform_color);
   }
 
-  // swap_colors($image_file, $image, $background_color, array('red' => 150, 'green' => 49, 'blue' => 246));
+  // swap_colors($filename, $image, $background_color, array('red' => 150, 'green' => 49, 'blue' => 246));
 
   // Set the content headers.
   header("Content-type: image/png" );
-  header("Content-Disposition: inline; filename=\"{$image_file}\"");
+  header("Content-Disposition: inline; filename=\"{$filename}\"");
 
   // Output the PNG file.
   imagepng($image);
@@ -155,29 +144,103 @@ function render_image ($image_file, $waveform_data, $source_width, $source_heigh
 
 
 //**************************************************************************************//
-// Swap one color for another.
-function swap_colors ($image_file, $image_processed, $color_swap_map) {
+// Convert HEX values to an RGB array.
+function hex_to_rgb ($hex_value) {
 
-  // Swap colors based on the index with a new RGB color.
-  foreach ($color_swap_map as $key => $value) {
-    $source_color = imagecolorclosest($image_processed, $value['source']['red'], $value['source']['green'], $value['source']['blue']);
-    imagecolorset($image_processed, $source_color, $value['swap']['red'], $value['swap']['green'], $value['swap']['blue']);
+  $rgb_components = array('red', 'green', 'blue');
+
+  // Convert the HEX value into an RGB array.
+  $raw_rgb_array = array_map('hexdec', str_split($hex_value, 2));
+
+  // Round the final values and assign them to an array.
+  $ret = array();
+  if (!empty($raw_rgb_array)) {
+    foreach ($rgb_components as $rgb_key => $rgb_component) {
+      $ret[$rgb_component] = $raw_rgb_array[$rgb_key];
+    }
   }
 
-  // Set the content headers.
-  header("Content-type: image/png" );
-  header("Content-Disposition: inline; filename=\"{$image_file}\"");
+  // Return the final values.
+  return $ret;
 
-  // Output the PNG file.
-  imagepng($image_processed);
+} // rgb_to_hex
 
-  // Deallocate the color.
-  imagecolordeallocate($image_processed, $source_color);
+//**************************************************************************************//
+// Swap one color for another.
+function swap_colors ($filename, $color_map) {
 
-  // Destroy the image to free up memory.
-  imagedestroy($image_processed);
+  // Testing the color swappping logic.
+  $image_processed = imagecreatefrompng($filename);
 
-  exit;
+  // Swap colors based on the index with a new RGB color.
+  $filename_array = array();
+  foreach ($color_map as $color_map_key => $color_map_value) {
+
+    // Convert the hex values to RGB values.
+    $rgb_src = hex_to_rgb($color_map_value['src']);
+    $rgb_dst = hex_to_rgb($color_map_value['dst']);
+
+    // Set the destination hex values as part of the filename array.
+    $filename_array[] = $color_map_value['dst'];
+
+    $source_color_index = imagecolorclosest($image_processed, $rgb_src['red'], $rgb_src['green'], $rgb_src['blue']);
+    imagecolorset($image_processed, $source_color_index, $rgb_dst['red'], $rgb_dst['green'], $rgb_dst['blue']);
+
+  }
+
+  // Create a new filename based on the swapped colors.
+  $pathinfo = pathinfo($filename);
+  $new_filename = $pathinfo['filename'] . '_' . implode('_', $filename_array) . '.' . $pathinfo['extension'];
+
+  if (TRUE) {
+
+    // Set the content headers.
+    // header("Content-type: text/plain" );
+    header("Content-type: text/html;charset=UTF-8" );
+
+    // Capture the rendered image in a variable and base64 encode it.
+    ob_start();
+    imagepng($image_processed);
+    $image_processed_data = ob_get_contents();
+    ob_end_clean();
+    $image_processed_base64 = base64_encode($image_processed_data);
+
+    $data_css = 'url(data:image/png;base64,' . $image_processed_base64 . ')';
+    $data_div = sprintf('<div style="width: 1800px; height: 280px; padding: 10px; background-image:%s; background-repeat: no-repeat;"><h3>This is an image rendered as direct data background via CSS.</h3></div>', $data_css );
+
+    // Simple HTML document for testing.
+    echo <<<EOT
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Waveform Test</title>
+</head>
+<body>
+${data_div}
+</body>
+</html>
+EOT;
+
+    exit;
+  }
+  else {
+
+    // Set the content headers.
+    header("Content-type: image/png" );
+    header("Content-Disposition: inline; filename=\"{$new_filename}\"");
+
+    // Output the PNG file.
+    imagepng($image_processed);
+
+    // Deallocate the color.
+    imagecolordeallocate($image_processed, $source_color);
+
+    // Destroy the image to free up memory.
+    imagedestroy($image_processed);
+
+    exit;
+
+  }
 
 } // swap_colors
 
@@ -189,34 +252,15 @@ $image_array = array();
 $image_array[] = 'waveform1.png';
 $image_array[] = 'waveform2.png';
 $image_array[] = 'waveform3.png';
+$image_array[] = 'waveform4.png';
+$image_array[] = 'waveform5.png';
+$image_array[] = 'waveform6.png';
 
 shuffle($image_array);
 
-$image_file = $image_array[0];
+$filename = $image_array[0];
 
-if (TRUE) {
-
-  // Testing the color swappping logic.
-  $image_processed = imagecreatefrompng($image_file);
-  // $color_sample = imagecolorat($image_processed, 0, 130);
-  // $color_sample_index = imagecolorsforindex($image_processed, $color_sample);
-
-  // Detect the color closest to the set values.
-  // $color_sample_index = imagecolorclosest($image_processed, 239, 239, 239);
-  // $color_sample_index = imagecolorclosest($image_processed, 0, 0, 0);
-
-  // Set the color map array.
-  $color_swap_map = array();
-  $color_swap_map[0]['source'] = array('red' => 239, 'green' => 239, 'blue' => 239);
-  $color_swap_map[0]['swap'] = array('red' => 95, 'green' => 95, 'blue' => 95);
-  $color_swap_map[1]['source'] = array('red' => 0, 'green' => 0, 'blue' => 0);
-  $color_swap_map[1]['swap'] = array('red' => 255, 'green' => 255, 'blue' => 204);
-
-  // Actually swap the colors.
-  swap_colors($image_file, $image_processed, $color_swap_map);
-
-}
-else {
+if (FALSE) {
 
   // Set the width and height.
   $source_width = 1800;
@@ -224,10 +268,25 @@ else {
   $source_height = 140; // The waveform is just 140 pixels high.
 
   // Parse the waveform image data.
-  $waveform_data = parse_waveform_image_data($image_file, $source_width, $source_height);
+  $waveform_data = parse_waveform_image_data($filename, $source_width, $source_height);
 
   // Render the image.
-  render_image($image_file, $waveform_data, $source_width, $source_height);
+  render_image($filename, $waveform_data, $source_width, $source_height);
+
+}
+else {
+
+  // Set the color map array.
+  $color_map = array();
+
+  // Waveform background color.
+  $color_map[0] = array('src' => 'efefef', 'dst' => '888888');
+
+  // Waveform color.
+  $color_map[1] = array('src' => '000000', 'dst' => 'ffff00');
+
+  // Actually swap the colors.
+  swap_colors($filename, $color_map);
 
 }
 
