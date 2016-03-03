@@ -32,7 +32,7 @@
 // Here is where the magic happens!
 
 //**************************************************************************************//
-// Generate and render JSON data output.
+// Parse the waveform image for raw data.
 function parse_waveform_image_data ($filename, $source_width, $source_height) {
 
   $image_processed = imagecreatefrompng($filename);
@@ -71,6 +71,73 @@ function parse_waveform_image_data ($filename, $source_width, $source_height) {
 
 
 //**************************************************************************************//
+// Convert HEX values to an RGB array.
+function hex_to_rgb ($hex_value) {
+
+  $rgb_components = array('red', 'green', 'blue');
+
+  // Convert the HEX value into an RGB array.
+  $raw_rgb_array = array_map('hexdec', str_split($hex_value, 2));
+
+  // Round the final values and assign them to an array.
+  $ret = array();
+  if (!empty($raw_rgb_array)) {
+    foreach ($rgb_components as $rgb_key => $rgb_component) {
+      $ret[$rgb_component] = $raw_rgb_array[$rgb_key];
+    }
+  }
+
+  // Return the final values.
+  return $ret;
+
+} // rgb_to_hex
+
+
+//**************************************************************************************//
+// Swap one color for another.
+function swap_colors ($filename, $color_map, $background_color, $transparent_color, $render_image_as_base64 = FALSE, $render_image_as_div = FALSE) {
+
+  // Testing the color swappping logic.
+  $image_processed = imagecreatefrompng($filename);
+
+  // Swap colors based on the index with a new RGB color.
+  $filename_array = array();
+  foreach ($color_map as $color_map_key => $color_map_value) {
+
+    // Convert the hex values to RGB values.
+    $rgb_src = hex_to_rgb($color_map_value['src']);
+    $rgb_dst = hex_to_rgb($color_map_value['dst']);
+
+    // Set the destination hex values as part of the filename array.
+    $filename_array[] = $color_map_value['dst'];
+
+    $source_color_index[$color_map_key] = imagecolorclosest($image_processed, $rgb_src['red'], $rgb_src['green'], $rgb_src['blue']);
+    imagecolorset($image_processed, $source_color_index[$color_map_key], $rgb_dst['red'], $rgb_dst['green'], $rgb_dst['blue']);
+
+  }
+
+  // Create a new filename based on the swapped colors.
+  $pathinfo = pathinfo($filename);
+  $new_filename = $pathinfo['filename'] . '_' . implode('_', $filename_array) . '.' . $pathinfo['extension'];
+
+  // Set the transparent color.
+  if ($transparent_color) {
+    $rgb_trans = hex_to_rgb($transparent_color);
+    $transparent_color_index = imagecolorclosest($image_processed, $rgb_trans['red'], $rgb_trans['green'], $rgb_trans['blue']);
+    imagecolortransparent($image_processed, $transparent_color_index);
+  }
+
+  if ($render_image_as_base64) {
+    render_image_as_base64($image_processed, $new_filename, $source_color_index, $background_color, $render_image_as_div);
+  }
+  else {
+    render_image_as_png($image_processed, $new_filename, $source_color_index, $background_color);
+  }
+
+} // swap_colors
+
+
+//**************************************************************************************//
 // Render a PNG image based on the raw JSON data.
 function render_data_as_image ($filename, $waveform_data, $source_width, $source_height, $colors) {
 
@@ -99,79 +166,20 @@ function render_data_as_image ($filename, $waveform_data, $source_width, $source
     imageline($image_processed, $key, ($source_height - $value), $key, ($source_height + $value), $waveform_color);
   }
 
+  // Create a new filename based on the colors.
+  $pathinfo = pathinfo($filename);
+  $new_filename = $pathinfo['filename'] . '_' . implode('_', $colors) . '.' . $pathinfo['extension'];
+
+  // Render the image as a PNG.
   $deallocate_colors = array($background_color, $waveform_color);
-  render_png_image ($image_processed, null, $deallocate_colors);
+  render_image_as_png($image_processed, $new_filename, $deallocate_colors);
 
 } // render_data_as_image
 
 
 //**************************************************************************************//
-// Convert HEX values to an RGB array.
-function hex_to_rgb ($hex_value) {
-
-  $rgb_components = array('red', 'green', 'blue');
-
-  // Convert the HEX value into an RGB array.
-  $raw_rgb_array = array_map('hexdec', str_split($hex_value, 2));
-
-  // Round the final values and assign them to an array.
-  $ret = array();
-  if (!empty($raw_rgb_array)) {
-    foreach ($rgb_components as $rgb_key => $rgb_component) {
-      $ret[$rgb_component] = $raw_rgb_array[$rgb_key];
-    }
-  }
-
-  // Return the final values.
-  return $ret;
-
-} // rgb_to_hex
-
-
-//**************************************************************************************//
-// Swap one color for another.
-function swap_colors ($filename, $color_map) {
-
-  // Testing the color swappping logic.
-  $image_processed = imagecreatefrompng($filename);
-
-  // Swap colors based on the index with a new RGB color.
-  $filename_array = array();
-  foreach ($color_map as $color_map_key => $color_map_value) {
-
-    // Convert the hex values to RGB values.
-    $rgb_src = hex_to_rgb($color_map_value['src']);
-    $rgb_dst = hex_to_rgb($color_map_value['dst']);
-
-    // Set the destination hex values as part of the filename array.
-    $filename_array[] = $color_map_value['dst'];
-
-    $source_color_index[$color_map_key] = imagecolorclosest($image_processed, $rgb_src['red'], $rgb_src['green'], $rgb_src['blue']);
-    imagecolorset($image_processed, $source_color_index[$color_map_key], $rgb_dst['red'], $rgb_dst['green'], $rgb_dst['blue']);
-
-  }
-
-  // Create a new filename based on the swapped colors.
-  $pathinfo = pathinfo($filename);
-  $new_filename = $pathinfo['filename'] . '_' . implode('_', $filename_array) . '.' . $pathinfo['extension'];
-
-  // Define a color as transparent.
-  imagecolortransparent($image_processed, $source_color_index['background']);
-  // imagecolortransparent($image_processed, $source_color_index['foreground']);
-
-  if (TRUE) {
-    render_image_tag($image_processed, $new_filename, $source_color_index);
-  }
-  else {
-    render_png_image($image_processed, $new_filename, $source_color_index);
-  }
-
-} // swap_colors
-
-
-//**************************************************************************************//
 // Generate and render JSON data output.
-function render_json_data ($waveform_data, $source_width, $source_height) {
+function render_data_as_json ($waveform_data, $source_width, $source_height) {
 
   // Set a data array.
   $data = array();
@@ -187,12 +195,12 @@ function render_json_data ($waveform_data, $source_width, $source_height) {
   header('Content-Type: application/json');
   print_r($ret);
 
-} // render_json_data
+} // render_data_as_json
 
 
 //**************************************************************************************//
 // Render the image.
-function render_png_image ($image_processed, $new_filename, $deallocate_colors) {
+function render_image_as_png ($image_processed, $new_filename, $deallocate_colors) {
 
   // Set the content headers.
   header("Content-type: image/png" );
@@ -211,12 +219,12 @@ function render_png_image ($image_processed, $new_filename, $deallocate_colors) 
 
   exit;
 
-} // render_png_image
+} // render_image_as_png
 
 
 //**************************************************************************************//
 // Render the image tag.
-function render_image_tag ($image_processed, $new_filename, $source_color_index) {
+function render_image_as_base64 ($image_processed, $new_filename, $source_color_index, $background_color, $render_image_as_base64 = FALSE) {
 
   // Set the content headers.
   // header("Content-type: text/plain" );
@@ -230,21 +238,23 @@ function render_image_tag ($image_processed, $new_filename, $source_color_index)
   $image_base64_data = base64_encode($image_processed_data);
   $image_base64 = 'data:image/png;base64,' . $image_base64_data;
 
-  $data_div = sprintf('<div style="background-color: #aa0000; background-image: url(%1$s); background-repeat: no-repeat; width: %2$spx; height: %3$spx; padding: 10px;">', $image_base64, 1800, 280)
+  $background_color_css = !empty($background_color) ? sprintf("background-color: #%s; ", $background_color) : '';
+
+  $data_div = sprintf('<div style="%1$sbackground-image: url(%2$s); background-repeat: no-repeat; width: %3$spx; height: %4$spx; padding: 10px;">', $background_color_css, $image_base64, 1800, 280)
             . '<h3>This is an image rendered as direct data background via CSS.</h3>'
             . '</div>'
             ;
   $image_tag = sprintf('<img src="%s" width="%2$d" height="%3$d" border="0">', $image_base64, 900, 140);
 
   // Simple HTML document for testing.
-  if (FALSE) {
+  if ($render_image_as_base64) {
     echo $data_div;
   }
   else {
-    echo sprintf('<div style="background-color: #aa0000; width: %1$s; height: %2$s; margin: 0 0 10px 0; padding: 0; overflow: hidden;">', '30%', '140px');
+    echo sprintf('<div style="%1$swidth: %2$s; height: %3$s; margin: 0 0 10px 0; padding: 0; overflow: hidden;">', $background_color_css, '30%', '140px');
     echo $image_tag;
     echo '</div>';
-    echo sprintf('<div style="background-color: #aa0000; width: %1$s; height: %2$s; margin: 0 0 10px 0; padding: 0; overflow: hidden;">', '100%', '140px');
+    echo sprintf('<div style="%1$swidth: %2$s; height: %3$s; margin: 0 0 10px 0; padding: 0; overflow: hidden;">', $background_color_css, '100%', '140px');
     echo $image_tag;
     echo '</div>';
   }
@@ -257,7 +267,7 @@ function render_image_tag ($image_processed, $new_filename, $source_color_index)
 
   exit;
 
-} // render_image_tag
+} // render_image_as_base64
 
 
 //**************************************************************************************//
@@ -277,14 +287,20 @@ $filename = $image_array[0];
 
 if (FALSE) {
 
-  // Parse the waveform image data.
-  $waveform_data = parse_waveform_image_data($filename, 1800, 140);
-
   // Waveform colors.
   $colors = array('background' => 'efefef', 'foreground' => '335511');
 
-  // Render the data as an image.
-  render_data_as_image($filename, $waveform_data, 1800, 140, $colors);
+  // Parse the waveform image data.
+  $waveform_data = parse_waveform_image_data($filename, 1800, 140);
+
+  if (FALSE) {
+    // Render the data as a JSON object.
+    render_data_as_json($waveform_data);
+  }
+  else {
+    // Render the data as a PNG image.
+    render_data_as_image($filename, $waveform_data, 1800, 140, $colors);
+  }
 
 }
 else {
@@ -298,8 +314,11 @@ else {
   // Waveform foreround color.
   $color_map['foreground'] = array('src' => '000000', 'dst' => '335511');
 
+  $background_color = 'aa0000';
+  $transparent_color = '888888';
+
   // Actually swap the colors.
-  swap_colors($filename, $color_map);
+  swap_colors($filename, $color_map, $background_color, $transparent_color, TRUE, FALSE);
 
 }
 
